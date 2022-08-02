@@ -8,7 +8,7 @@ import logging
 logging.info("=======>>>>>Starting m3sp action Script.")
 
 # CT will provide a params{} dictionary with the dependent properties you defined in 'properties.conf' for each of your App's custom properties.
-logging.info("=======>>>>>m3sp: parameters supplied by CT: {}".format(params))
+logging.info(f"=======>>>>>m3sp: parameters supplied by CT: {params}")
 
 # CT will provide a params{} dictionary with the dependent properties you defined in 'properties.conf' & 'ssytem.conf' for each of your App's custom properties.
 base_url = params['connect_m3sp_url']
@@ -26,10 +26,15 @@ headers = {
 
 # Authenticate
 try:
-    request = urllib.request.Request(base_url + '/api/authenticate', headers=headers, data=bytes(json.dumps(payload), encoding="utf-8"))
+    request = urllib.request.Request(
+        f'{base_url}/api/authenticate',
+        headers=headers,
+        data=bytes(json.dumps(payload), encoding="utf-8"),
+    )
+
     resp = urllib.request.urlopen(request)
     jwt_token = json.loads(resp.read())['token']
-    logging.info('=======>>>>>m3sp: Recieved Token: ' + jwt_token)
+    logging.info(f'=======>>>>>m3sp: Recieved Token: {jwt_token}')
 except:
     logging.info('=======>>>>>m3sp: ERROR Authenticating to Server!')
 
@@ -38,8 +43,9 @@ device_headers = {
     'Content-Type': "application/json",
     'charset': 'utf-8',
     'User-Agent': "FSCT/1.16.2020",
-    'Authorization': 'Bearer ' + str(jwt_token)
-    }
+    'Authorization': f'Bearer {str(jwt_token)}',
+}
+
 
 # ----   ACTION ----
 device_info = {
@@ -50,15 +56,20 @@ device_info = {
 response = {}
 
 try:
-    request = urllib.request.Request(base_url + '/api/senddata', headers=device_headers, data=bytes(json.dumps(device_info), encoding="utf-8"))
+    request = urllib.request.Request(
+        f'{base_url}/api/senddata',
+        headers=device_headers,
+        data=bytes(json.dumps(device_info), encoding="utf-8"),
+    )
+
     resp = urllib.request.urlopen(request)
     request_response = json.loads(resp.read())
-    if resp.getcode() == 200:
-        response['succeeded'] = True
-    else:
-        response['succeeded'] = False
+    response['succeeded'] = resp.getcode() == 200
 except:
     response['succeeded'] = False
-    logging.info("=======>>>>>Error sending data, server reurned: " + resp.getcode())
+    logging.info(
+        f"=======>>>>>Error sending data, server reurned: {resp.getcode()}"
+    )
 
-logging.info("=======>>>>>Ending m3sp action Script.: {}".format(response))
+
+logging.info(f"=======>>>>>Ending m3sp action Script.: {response}")

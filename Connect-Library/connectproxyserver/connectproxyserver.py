@@ -70,12 +70,8 @@ class ConnectProxyServer:
     """
     def __init__(self, params):
         is_proxy_enabled = params.get("connect_proxy_enable")
-        logging.debug("Proxy enabled status: " + str(is_proxy_enabled))
-        if is_proxy_enabled == "true":  # Cover the case is_proxy_enable is None, it is not equal to "true"
-            #: A boolean to indicate if the proxy server is enabled
-            self.is_enabled = True
-        else:
-            self.is_enabled = False
+        logging.debug(f"Proxy enabled status: {str(is_proxy_enabled)}")
+        self.is_enabled = is_proxy_enabled == "true"
         if self.is_enabled:
             #: Proxy server ip. None if proxy server is not enabled.
             # Required if proxy server is enabled, otherwise, a ValueError is
@@ -129,45 +125,42 @@ class ConnectProxyServer:
         if ProxyProtocol.https == protocol:
             if self.username and self.password:
                 proxies = {
-                    "https": "https://{}:{}@{}:{}".format(self.username, self.password, self.ip, self.port)
+                    "https": f"https://{self.username}:{self.password}@{self.ip}:{self.port}"
                 }
-            elif self.username and not self.password:
-                proxies = {
-                    "https": "https://{}:{}@{}:{}".format(self.username, "", self.ip, self.port)
-                }
+
+            elif self.username:
+                proxies = {"https": f"https://{self.username}:@{self.ip}:{self.port}"}
             else:
-                proxies = {
-                    "https": "https://{}:{}".format(self.ip, self.port)
-                }
+                proxies = {"https": f"https://{self.ip}:{self.port}"}
         elif ProxyProtocol.http == protocol:
             if self.username and self.password:
                 proxies = {
-                    "http": "http://{}:{}@{}:{}".format(self.username, self.password, self.ip, self.port),
+                    "http": f"http://{self.username}:{self.password}@{self.ip}:{self.port}"
                 }
-            elif self.username and not self.password:
-                proxies = {
-                    "http": "https://{}:{}@{}:{}".format(self.username, "", self.ip, self.port)
-                }
+
+            elif self.username:
+                proxies = {"http": f"https://{self.username}:@{self.ip}:{self.port}"}
             else:
-                proxies = {
-                    "http": "http://{}:{}".format(self.ip, self.port)
-                }
+                proxies = {"http": f"http://{self.ip}:{self.port}"}
         elif ProxyProtocol.all == protocol:
             if self.username and self.password:
                 proxies = {
-                    "http": "http://{}:{}@{}:{}".format(self.username, self.password, self.ip, self.port),
-                    "https": "https://{}:{}@{}:{}".format(self.username, self.password, self.ip, self.port)
+                    "http": f"http://{self.username}:{self.password}@{self.ip}:{self.port}",
+                    "https": f"https://{self.username}:{self.password}@{self.ip}:{self.port}",
                 }
-            elif self.username and not self.password:
+
+            elif self.username:
                 proxies = {
-                    "http": "https://{}:{}@{}:{}".format(self.username, "", self.ip, self.port),
-                    "https": "https://{}:{}@{}:{}".format(self.username, "", self.ip, self.port)
+                    "http": f"https://{self.username}:@{self.ip}:{self.port}",
+                    "https": f"https://{self.username}:@{self.ip}:{self.port}",
                 }
+
             else:
                 proxies = {
-                    "http": "http://{}:{}".format(self.ip, self.port),
-                    "https": "https://{}:{}".format(self.ip, self.port)
+                    "http": f"http://{self.ip}:{self.port}",
+                    "https": f"https://{self.ip}:{self.port}",
                 }
+
         return proxies
 
     def get_empty_proxies_string(self):
@@ -262,12 +255,11 @@ class ConnectProxyServer:
             # Set proxy ones for entire session
             session.auth = HTTPProxyAuth(self.username, self.password)
             session.proxies.update(proxies)
-            self.proxies = proxies
         else:
             proxies = self.get_empty_proxies_string()
             session.proxies.update(proxies)
             session.auth = None
-            self.proxies = proxies
+        self.proxies = proxies
         # Not trusting default env
         session.trust_env = False
 

@@ -1,4 +1,1 @@
-response = {}
-
-response["succeeded"] = True
-response["result_msg"] = "Success: Nothing to test "
+response = {"succeeded": True, "result_msg": "Success: Nothing to test "}

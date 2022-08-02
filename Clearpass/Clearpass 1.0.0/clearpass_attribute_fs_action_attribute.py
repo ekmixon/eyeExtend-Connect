@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 '''
 Modify ClearPass endpoint attribute Forescout-ACTION
 '''
@@ -35,7 +36,7 @@ P_BEARER_TOKEN = params.get("connect_authorization_token")
 P_SERVER_ADDRESS = params.get("connect_clearpass_server_address")
 
 if P_BEARER_TOKEN:
-    logging.debug("P_BEARER_TOKEN (First 10) : %s", P_BEARER_TOKEN[0:10])
+    logging.debug("P_BEARER_TOKEN (First 10) : %s", P_BEARER_TOKEN[:10])
 
 A_FS_ACTION = params.get("connect_clearpass_fs_action_attribute")
 
@@ -64,9 +65,12 @@ if EP_MAC:
         # Build Request
         ATTRIBUTE_URL = f"https://{P_SERVER_ADDRESS}/api/endpoint/mac-address/{EP_MAC}"
         # Header
-        BEARER_HEADER = {"Authorization": "Bearer " + P_BEARER_TOKEN,
-                         "Content-Type": "application/json",
-                         "Accept": "application/json"}
+        BEARER_HEADER = {
+            "Authorization": f"Bearer {P_BEARER_TOKEN}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+
 
         logging.debug("ATTRIBUTE_URL : %s", ATTRIBUTE_URL)
 
@@ -82,17 +86,18 @@ if EP_MAC:
 
         except HTTPError as e:
             response["succeeded"] = False
-            response["error"] = "HTTP Error : Could not connect to ClearPass. Response code: {}".format(
-                e.code)
+            response[
+                "error"
+            ] = f"HTTP Error : Could not connect to ClearPass. Response code: {e.code}"
+
 
         except URLError as e:
             response["succeeded"] = False
-            response["error"] = "URL Error : Could not connect to ClearPass. {}".format(
-                e.reason)
+            response["error"] = f"URL Error : Could not connect to ClearPass. {e.reason}"
 
         except Exception as e:
             response["succeeded"] = False
-            response["error"] = "Exception : Could not connect to ClearPass. {}".format(e)
+            response["error"] = f"Exception : Could not connect to ClearPass. {e}"
 
     else:
         response["succeeded"] = False

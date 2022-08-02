@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
 
+
 '''
 Aruba Central Keep Bearer Token Updated
 '''
@@ -43,8 +44,7 @@ P_STEP1_PASSWORD = params.get('connect_arubacentral_step1_password')
 #   HTTPS Context
 #   Debug
 #######
-HANDLER = []
-HANDLER.append(urllib.request.HTTPCookieProcessor())
+HANDLER = [urllib.request.HTTPCookieProcessor()]
 HANDLER.append(urllib.request.HTTPSHandler(context=ssl_context))
 # Debug level does not seem to work with logging module
 #HANDLER.append(urllib.request.HTTPSHandler(debuglevel=10))

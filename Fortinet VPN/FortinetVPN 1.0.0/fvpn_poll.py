@@ -66,12 +66,12 @@ def call(url, data, method):
         response["error"] = f"URLError - Reason: {call_error.reason}"
 
 
-def endpoints_vpn_ipsec (count_vpn, resolve_response, fgt_information):
+def endpoints_vpn_ipsec(count_vpn, resolve_response, fgt_information):
     # For each endpoint
-    for i in range(0, count_vpn):
-        endpoint = {}
+    for i in range(count_vpn):
         return_results = resolve_response[i]
         if return_results["type"] == "dialup":
+            endpoint = {}
             try:
                 proxyid = str(return_results["proxyid"][0]["proxy_dst"])
                 s = proxyid.rfind("subnet") + 10
@@ -79,72 +79,87 @@ def endpoints_vpn_ipsec (count_vpn, resolve_response, fgt_information):
                 e = max_ip.rfind("-")
                 # Create Endpoint entry
                 endpoint["ip"] = max_ip[:e]
-                properties = {}
-                properties["connect_fvpn_eip"] = return_results["rgwy"]
-                properties["connect_fvpn_user"] = return_results["xauth_user"]
-                properties["connect_fvpn_type"] = "VPN IPSEC XAuth"
-                properties["connect_fvpn_p1name"] = return_results["name"]
-                properties["connect_fvpn_p2name"] = return_results["proxyid"][0]["p2name"]
-                properties["connect_fvpn_p2serial"] = return_results["proxyid"][0]["p2serial"]
-                properties["connect_fvpn_ip"] = fgt_information[1]
-                properties["connect_fvpn_learnt"] = fgt_information[5]
-                properties["connect_fvpn_hostname"] = fgt_information[0]
-                properties["connect_fvpn_vdom"] = fgt_information[4]
-                properties["connect_fvpn_serial"] = fgt_information[2]
-                properties["connect_fvpn_version"] = fgt_information[3]
-                properties["connect_fvpn_index"] = ""
+                properties = {
+                    "connect_fvpn_eip": return_results["rgwy"],
+                    "connect_fvpn_user": return_results["xauth_user"],
+                    "connect_fvpn_type": "VPN IPSEC XAuth",
+                    "connect_fvpn_p1name": return_results["name"],
+                    "connect_fvpn_p2name": return_results["proxyid"][0][
+                        "p2name"
+                    ],
+                    "connect_fvpn_p2serial": return_results["proxyid"][0][
+                        "p2serial"
+                    ],
+                    "connect_fvpn_ip": fgt_information[1],
+                    "connect_fvpn_learnt": fgt_information[5],
+                    "connect_fvpn_hostname": fgt_information[0],
+                    "connect_fvpn_vdom": fgt_information[4],
+                    "connect_fvpn_serial": fgt_information[2],
+                    "connect_fvpn_version": fgt_information[3],
+                    "connect_fvpn_index": "",
+                }
+
                 endpoint["properties"] = properties
                 endpoints.append(endpoint)
-            except :
-                logging.info(f"No correct VPN IPSEC User")
+            except:
+                logging.info("No correct VPN IPSEC User")
                 return
 
 
-def endpoints_vpn_ssl (count_vpn, resolve_response, fgt_information):
-        # For each endpoint
-    for i in range(0, count_vpn):
-        endpoint = {}
+def endpoints_vpn_ssl(count_vpn, resolve_response, fgt_information):
+    # For each endpoint
+    for i in range(count_vpn):
         return_results = resolve_response[i]
         if return_results["subsessions"][0]["mode"] == "Tunnel":
-            # Create Endpoint entry
-            endpoint["ip"] = return_results["subsessions"][0]["aip"]
-            properties = {}
-            properties["connect_fvpn_eip"] = return_results["remote_host"]
-            properties["connect_fvpn_user"] = return_results["user_name"]
-            properties["connect_fvpn_type"] = "VPN SSL Tunnel"
-            properties["connect_fvpn_index"] = return_results["subsessions"][0]["index"]
-            properties["connect_fvpn_ip"] = fgt_information[1]
-            properties["connect_fvpn_learnt"] = fgt_information[5]
-            properties["connect_fvpn_hostname"] = fgt_information[0]
-            properties["connect_fvpn_vdom"] = fgt_information[4]
-            properties["connect_fvpn_serial"] = fgt_information[2]
-            properties["connect_fvpn_version"] = fgt_information[3]
-            properties["connect_fvpn_p1name"] = ""
-            properties["connect_fvpn_p2name"] = ""
-            properties["connect_fvpn_p2serial"] = ""
+            endpoint = {"ip": return_results["subsessions"][0]["aip"]}
+            properties = {
+                "connect_fvpn_eip": return_results["remote_host"],
+                "connect_fvpn_user": return_results["user_name"],
+                "connect_fvpn_type": "VPN SSL Tunnel",
+                "connect_fvpn_index": return_results["subsessions"][0][
+                    "index"
+                ],
+                "connect_fvpn_ip": fgt_information[1],
+                "connect_fvpn_learnt": fgt_information[5],
+                "connect_fvpn_hostname": fgt_information[0],
+                "connect_fvpn_vdom": fgt_information[4],
+                "connect_fvpn_serial": fgt_information[2],
+                "connect_fvpn_version": fgt_information[3],
+                "connect_fvpn_p1name": "",
+                "connect_fvpn_p2name": "",
+                "connect_fvpn_p2serial": "",
+            }
+
             endpoint["properties"] = properties
             endpoints.append(endpoint)
 
 
-def fmg_endpoints_vpn (vpn_response, fmg_fgt_list, mode):
+def fmg_endpoints_vpn(vpn_response, fmg_fgt_list, mode):
     count_fgt = len(vpn_response)
     # For each Fortigate
-    for i in range(0, count_fgt):
+    for i in range(count_fgt):
         # Check if Each FGT return Status success code and results not empty
         if vpn_response[i]["status"]["code"] == 0 and vpn_response[i]["response"]["results"] != []:
             endpoints_response = vpn_response[i]["response"]["results"]
             fgt_information=[]
             count_fgt_list = len(fmg_fgt_list)
             # For each users in the Fortigate
-            for j in range(0, count_fgt_list):
+            for j in range(count_fgt_list):
                 # Put information about the FortiGate
                 if str(vpn_response[i]["response"]["serial"]) == fmg_fgt_list[j]["sn"] and vpn_response[i]["response"]["vdom"] == fmg_fgt_list[j]["vdom"]:
-                    fgt_information.append(str(fmg_fgt_list[j]["name"]))
-                    fgt_information.append(str(fmg_fgt_list[j]["ip"]))
-                    fgt_information.append(str(vpn_response[i]["response"]["serial"]))
-                    fgt_information.append(str(vpn_response[i]["response"]["version"]) + "." + str(vpn_response[i]["response"]["build"]))
-                    fgt_information.append(str(fmg_fgt_list[j]["vdom"]))
-                    fgt_information.append("FortiManager")
+                    fgt_information.extend(
+                        (
+                            str(fmg_fgt_list[j]["name"]),
+                            str(fmg_fgt_list[j]["ip"]),
+                            str(vpn_response[i]["response"]["serial"]),
+                            str(vpn_response[i]["response"]["version"])
+                            + "."
+                            + str(vpn_response[i]["response"]["build"]),
+                            str(fmg_fgt_list[j]["vdom"]),
+                            "FortiManager",
+                        )
+                    )
+
             count_vpn = len(endpoints_response)
             if mode == "IPSEC":
                 endpoints_vpn_ipsec(count_vpn,endpoints_response,fgt_information)
@@ -154,10 +169,7 @@ def fmg_endpoints_vpn (vpn_response, fmg_fgt_list, mode):
 
 
 def search(list, platform):
-    for i in range(len(list)):
-        if list[i] == platform:
-            return True
-    return False
+    return any(list[i] == platform for i in range(len(list)))
 
 #################
 # FUNCTIONS END #

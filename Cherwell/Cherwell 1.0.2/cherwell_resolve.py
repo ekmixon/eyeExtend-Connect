@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 import json
 import urllib.request
 
@@ -47,8 +48,9 @@ url_accept_type = params["connect_cherwell_accept_type"]
 header_info = {
     'Content-Type': url_content_type,
     'Accept': url_accept_type,
-    'Authorization': 'Bearer ' + bearer_token
+    'Authorization': f'Bearer {bearer_token}',
 }
+
 
 # initialize all the variables that we are going to use to store the
 # table information from Cherwell
@@ -66,7 +68,7 @@ try:
 
         # Build the entire url
         target_url = url_call + url_path + tablename
-        logging.debug("Processing table info Target URL " + target_url + " Response: ")
+        logging.debug(f"Processing table info Target URL {target_url} Response: ")
 
         # Issue the REST API call and retrieve the information
         request_response = urllib.request.Request(target_url, headers=header_info, data=bytes(payload_data, encoding="utf-8"), method='GET')
@@ -81,11 +83,15 @@ try:
         configurationitem_displayName = request_response[0]['displayName']
 
 
-    url_info = {}
     # Server URL
-    url_path = "/api/V1/getbusinessobjectschema/busobid/" + configurationitem_busObjID
-    url_info["ci_busobjid"] = configurationitem_busObjID
-    url_info["ci_displayname"] = configurationitem_displayName
+    url_path = (
+        f"/api/V1/getbusinessobjectschema/busobid/{configurationitem_busObjID}"
+    )
+
+    url_info = {
+        "ci_busobjid": configurationitem_busObjID,
+        "ci_displayname": configurationitem_displayName,
+    }
 
     # ***** START - AUTH API CONFIGURATION ***** #
 
@@ -99,7 +105,7 @@ try:
     url_info['target_url'] = target_url
 
     # Issue the REST API call and retrieve the information
-    logging.debug("Retreieve data with Target URL " + target_url + " Response: ")
+    logging.debug(f"Retreieve data with Target URL {target_url} Response: ")
     request_response = urllib.request.Request(target_url, headers=header_info, data=bytes(payload_data, encoding="utf-8"), method='GET')
     resp = urllib.request.urlopen(request_response, context=ssl_context)
 
@@ -117,17 +123,20 @@ try:
     logging.debug("Cherwell mac lookup " + params["mac"])
     cherwell_macaddress = params["mac"]
 
-    target_url = url_call + '/api/V1/getsearchresults'
+    target_url = f'{url_call}/api/V1/getsearchresults'
     payload_data = '{"busObId":"' + configurationitem_busObjID + '","filters":[{"fieldid":"' + field_id + '","operator":"eq","value":"' + cherwell_macaddress + '"}],"includeAllFields":true}'
-    logging.debug("Get mac data via call to URL " + target_url + " and payload data " + payload_data)
+    logging.debug(
+        f"Get mac data via call to URL {target_url} and payload data {payload_data}"
+    )
+
 
     request_response = urllib.request.Request(target_url, headers=header_info, data=bytes(payload_data, encoding="utf-8"), method='POST')
     resp = urllib.request.urlopen(request_response, context=ssl_context)
 
     # Read the json responses
     request_response1 = json.loads(resp.read())
-    if ((cherwell_macaddress == "005056acfdb9") or (cherwell_macaddress == "005056ab3fe8") or (cherwell_macaddress == "00505687634e")):
-      logging.debug ("Getsearchresults API response :" + str(request_response1))
+    if cherwell_macaddress in ["005056acfdb9", "005056ab3fe8", "00505687634e"]:
+        logging.debug(f"Getsearchresults API response :{str(request_response1)}")
     config_computer_obj = request_response1['businessObjects']
 
     cherwell_fields = ["ConfigurationItemTypeName", "ConfigurationItemTypeID", "RecID", "SerialNumber", "ConfigurationItemTypeName", "CreatedDateTime", "PurchaseDate", "AssetStatus", "AssetTag", "PrimaryUse", "Model", "OperatingSystemVersion", "OperatingSystem", "OperatingSystemFamily", "OperatingSystemGroup", "OperatingSystemServicePack", "Vendor", "Manufacturer", "AssetOwner", "OwnedByEmail", "AssetType", "LocationRoom", "LocationBuilding", "LocationFloor", "PrimaryUserVIP", "PrimaryUserName", "PrimaryUserEmail", "Barcode", "FriendlyName", "BIOSVersion", "CreatedBy", "LastModifiedDateTime", "LastModBy", "ContractID", "MACAddress", "IPAddress", "HostName"]
@@ -150,4 +159,4 @@ try:
                     properties[cherwell_to_ct_props_map[field_name]] = field_value
     response["properties"] = properties
 except Exception as e:
-    response["error"] = "Could not resolve properties {}".format(str(e))
+    response["error"] = f"Could not resolve properties {str(e)}"

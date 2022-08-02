@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 import json
 from urllib import request, error
 
@@ -78,4 +79,4 @@ if fortigate_learnt == "FortiGate":
             response["error"] = f"Error could not Disable User. {error.reason}"
 else:
     response["succeeded"] = False
-    response["error"] = f"Error cannot disable user on FortiManager"
+    response["error"] = "Error cannot disable user on FortiManager"

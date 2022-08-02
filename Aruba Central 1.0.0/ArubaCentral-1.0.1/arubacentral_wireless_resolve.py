@@ -79,8 +79,7 @@ P_MAC = params.get('mac')
 #   HTTPS Context
 #   Debug
 #######
-HANDLER = []
-HANDLER.append(urllib.request.HTTPCookieProcessor())
+HANDLER = [urllib.request.HTTPCookieProcessor()]
 HANDLER.append(urllib.request.HTTPSHandler(context=ssl_context))
 # Debug level does not seem to work with logging module
 #HANDLER.append(urllib.request.HTTPSHandler(debuglevel=10))
@@ -135,18 +134,14 @@ if STEP4_BEARER_TOKEN:
             ########################################
             # Forescout Properties for endpoint(s)
             ########################################
-            fs_endpoint_properties = {}
+            fs_endpoint_properties = {
+                value: WIRELESS_CLIENTS['clients'][0][key].replace(':', '')
+                if key in ('associated_device_mac', 'radio_mac')
+                else WIRELESS_CLIENTS['clients'][0][key]
+                for key, value in ARUBA_CLIENT_WIRELESS_TO_FS_MAP.items()
+                if key in WIRELESS_CLIENTS['clients'][0].keys()
+            }
 
-            for key, value in ARUBA_CLIENT_WIRELESS_TO_FS_MAP.items():
-
-                # Build Properties verify key exists
-                if key in WIRELESS_CLIENTS['clients'][0].keys():
-
-                    # Need to remove colon from mac address(s)
-                    if key in ('associated_device_mac', 'radio_mac'):
-                        fs_endpoint_properties[value] = WIRELESS_CLIENTS['clients'][0][key].replace(':', '')
-                    else:
-                        fs_endpoint_properties[value] = WIRELESS_CLIENTS['clients'][0][key]
 
             logging.debug('properties =  %s', fs_endpoint_properties)
             # Update Forescout properties for endpoint

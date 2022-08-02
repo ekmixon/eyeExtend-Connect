@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
 
+
 import jwt  # PyJWT version 1.6.1 as of the time of authoring
 import uuid
 import json
@@ -50,8 +51,9 @@ url_accept_type = params["connect_cherwell_accept_type"]
 header_info = {
     'Content-Type': url_content_type,
     'Accept': url_accept_type,
-    'Authorization': 'Bearer ' + bearer_token
+    'Authorization': f'Bearer {bearer_token}',
 }
+
 
 # initialize all the variables that we are going to use to store the
 # table information from Cherwell
@@ -81,12 +83,15 @@ try:
         configurationitem_displayName = request_response[0]['displayName']
 
 
-    #
-    url_info = {}
     # Server URL
-    url_path = "/api/V1/getbusinessobjectschema/busobid/" + configurationitem_busObjID
-    url_info["ci_busobjid"] = configurationitem_busObjID
-    url_info["ci_displayname"] = configurationitem_displayName
+    url_path = (
+        f"/api/V1/getbusinessobjectschema/busobid/{configurationitem_busObjID}"
+    )
+
+    url_info = {
+        "ci_busobjid": configurationitem_busObjID,
+        "ci_displayname": configurationitem_displayName,
+    }
 
     # ***** START - AUTH API CONFIGURATION ***** #
 
@@ -95,8 +100,6 @@ try:
     payload_data = ''
     variables = {}
     properties = {}
-    response = {}
-
     # Build the entire url
     target_url = url_call + url_path
     url_info['target_url'] = target_url
@@ -123,7 +126,7 @@ try:
     #cherwell_macaddress = "00505680cc82"
     cherwell_macaddress = params["mac"]
 
-    target_url = url_call + '/api/V1/getsearchresults'
+    target_url = f'{url_call}/api/V1/getsearchresults'
     payload_data = '{"busObId":"' + configurationitem_busObjID + '","filters":[{"fieldid":"' + field_id + '","operator":"eq","value":"' + cherwell_macaddress + '"}],"includeAllFields":true}'
 
     request_response = urllib.request.Request(target_url, headers=header_info, data=bytes(payload_data, encoding="utf-8"), method='POST')
@@ -153,6 +156,6 @@ try:
                     properties[cherwell_to_ct_props_map[field_name]] = field_date_value
                 else:
                     properties[cherwell_to_ct_props_map[field_name]] = field_value
-    response["properties"] = properties
+    response = {"properties": properties}
 except Exception as e:
-    response["error"] = "Could not resolve properties {}".format(str(e))
+    response["error"] = f"Could not resolve properties {str(e)}"

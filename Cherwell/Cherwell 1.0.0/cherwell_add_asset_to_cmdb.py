@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
 
+
 import jwt  # PyJWT version 1.6.1 as of the time of authoring
 import uuid
 import json
@@ -49,8 +50,9 @@ url_accept_type = params["connect_cherwell_accept_type"]
 header_info = {
     'Content-Type': url_content_type,
     'Accept': url_accept_type,
-    'Authorization': 'Bearer ' + bearer_token
+    'Authorization': f'Bearer {bearer_token}',
 }
+
 
 # initialize the payload variable and variables that are used to store
 # the object info for the tables we are going to reference
@@ -83,7 +85,7 @@ for x in readtables:
 # Server URL update needed to grab the objects schema id
 # this is required to build the payload for the submission
 # of data as the busObj name and ID are required to process
-url_path = "/api/V1/getbusinessobjectschema/busobid/" + fsimporttable_busObjID
+url_path = f"/api/V1/getbusinessobjectschema/busobid/{fsimporttable_busObjID}"
 
 
 
@@ -98,9 +100,7 @@ target_url = url_call + url_path
 request_response = urllib.request.Request(target_url, headers=header_info, data=bytes(payload_data, encoding="utf-8"), method='GET')
 resp = urllib.request.urlopen(request_response, context=ssl_context)
 
-cmdb_payload = {}
-cmdb_payload["busObId"] = fsimporttable_busObjID
-
+cmdb_payload = {"busObId": fsimporttable_busObjID}
 # Read the json responses
 request_response1 = json.loads(resp.read())
 
@@ -128,20 +128,20 @@ for field in field_name_to_field_busobjid_map:
 
     if fieldname.startswith("U_") and fieldname != "U_":
         try:
-            ct_fieldname = "cherwell_" + fieldname
+            ct_fieldname = f"cherwell_{fieldname}"
             logging.debug(ct_fieldname)
             parameter_field = params[ct_fieldname]
             # check to make sure there is a passed value.  If not do not include
             # in the payload.  This is used to prevent sending of empty fields
 
-            if parameter_field != "Irresolvable" and parameter_field != "":
+            if parameter_field not in ["Irresolvable", ""]:
                 cmdb_field["value"] = parameter_field
                 cmdb_field["dirty"] = dirty
                 cmdb_field["name"] = fieldname
                 cmdb_field["fieldId"] = field_name_to_field_busobjid_map[fieldname]
                 cmdb_fields.append(cmdb_field)
         except:
-            errormessage = "Error for field: " + ct_fieldname
+            errormessage = f"Error for field: {ct_fieldname}"
             logging.debug(errormessage)
 
 # Put together the final parts of the payload
@@ -150,7 +150,7 @@ cmdb_payload["persist"] = dirty
 
 
 # Set up the URL for the REST API to save the object
-target_url = url_call + '/api/V1/savebusinessobject'
+target_url = f'{url_call}/api/V1/savebusinessobject'
 
 # Convert the payload to json in order to convert the values
 # to the correct format for json
@@ -170,14 +170,14 @@ resp = urllib.request.urlopen(request_response, context=ssl_context)
 # The field "troubleshooting" is optional to display user defined messages in CounterACT for actions.
 
 if resp.getcode() == 200:
-	response["succeeded"] = True
-	request_response = json.loads(resp.read())
-	id = request_response['busObRecId']
-	logging.debug("(CREATE) The record id created was {}".format(id))
-	response["RecID"] = id
+    response["succeeded"] = True
+    request_response = json.loads(resp.read())
+    id = request_response['busObRecId']
+    logging.debug(f"(CREATE) The record id created was {id}")
+    response["RecID"] = id
 else:
-	response["succeeded"] = False
-	response["troubleshooting"] = "Failed action. Response code: {}".format(resp.getcode())
+    response["succeeded"] = False
+    response["troubleshooting"] = f"Failed action. Response code: {resp.getcode()}"
 
 logging.debug("Add to CMDB result: ")
 logging.debug(response)

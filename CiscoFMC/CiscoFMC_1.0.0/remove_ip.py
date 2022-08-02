@@ -17,6 +17,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 import requests
 import json
 import logging
@@ -39,14 +40,11 @@ ctx = ssl_verify
 
 
 try:
-    if Access_token != '':
-        logging.debug(f'Remove IP script: Authorisation Token: {Access_token}')
-    else:
+    if Access_token == '':
         fmc = ciscofmc.CiscoFMC(server, username, password, ctx)
         fmc.get_auth_token()
         Access_token = fmc.access_token
-        logging.debug(f'Remove IP script: Authorisation Token: {Access_token}')
-
+    logging.debug(f'Remove IP script: Authorisation Token: {Access_token}')
     url = f'https://{server}/api/fmc_config/v1/domain/{domain}/object/dynamicobjects/{dynamicobject}/mappings?action=remove'
     headers = {'X-Auth-Access-Token': Access_token, 'Content-Type': 'application/json'}
     payload = json.dumps({"mappings": [ip]})
@@ -58,16 +56,16 @@ try:
 
     elif resp.status_code == 500:
         response["succeeded"] = False
-        response["troubleshooting"] = f"Failed action. Invalid Domain Name"
+        response["troubleshooting"] = "Failed action. Invalid Domain Name"
         logging.debug(f"===>Cisco FMC IP Remove Failed- Invalid Domain name- {resp.json()}")
 
     elif resp.status_code == 404:
         response["succeeded"] = False
-        response["troubleshooting"] = f"Failed action. Invalid Dynamic Object Name"
+        response["troubleshooting"] = "Failed action. Invalid Dynamic Object Name"
         logging.debug(f"===>Cisco FMC IP Remove Failed- Invalid Dynamic Object Name- {resp.json()}")
     else:
         response["succeeded"] = False
-        response["troubleshooting"] = f"Failed action.Debug for more details"
+        response["troubleshooting"] = "Failed action.Debug for more details"
         logging.debug(f"===>Cisco FMC Add IP Failed- Response Code - {resp.status_code}")
         logging.debug(f"===>Cisco FMC Add IP Failed- Response - {resp.json()}")
 

@@ -20,12 +20,10 @@ m3sp_to_ct_props_map = {
 if "mac" in params:
     logging.info("=======>>>>>Resolving mac address: " + params["mac"])
 
-# All responses from scripts must contain the JSON object 'response'.
-# Host property resolve scriptswill need to populate a 'properties' JSON object within the
-# JSON object 'response'. The 'properties' object will be a key, value mapping between the CT #property name and the value of the property.
-response = {}
-properties = {}
-properties["connect_m3sp_department"] = "Marketing"
-properties["connect_m3sp_description"] = "Somewhere over the rainbow"
-response["properties"] = properties
-logging.info("=======>>>>> m3sp properties returned: {}".format(properties))
+properties = {
+    "connect_m3sp_department": "Marketing",
+    "connect_m3sp_description": "Somewhere over the rainbow",
+}
+
+response = {"properties": properties}
+logging.info(f"=======>>>>> m3sp properties returned: {properties}")

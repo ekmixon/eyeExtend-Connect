@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 '''
 Change Device Profile
 '''
@@ -39,7 +40,7 @@ A_REAUTH_PROFILE = params.get("connect_clearpass_reauthorize_profile")
 EP_CONNECT_CLEARPASS_ID = params.get("connect_clearpass_id")
 
 if P_BEARER_TOKEN:
-    logging.debug("P_BEARER_TOKEN (First 10) : %s", P_BEARER_TOKEN[0:10])
+    logging.debug("P_BEARER_TOKEN (First 10) : %s", P_BEARER_TOKEN[:10])
 
 # Build PROFILE payload
 PROFILE_PAYLOAD = {
@@ -63,9 +64,12 @@ if EP_CONNECT_CLEARPASS_ID:
         # Build Request
         REAUTH_URL = f"https://{P_SERVER_ADDRESS}/api/session/{EP_CONNECT_CLEARPASS_ID}/reauthorize"
         # Header
-        BEARER_HEADER = {"Authorization": "Bearer " + P_BEARER_TOKEN,
-                         "Content-Type": "application/json",
-                         "Accept": "application/json"}
+        BEARER_HEADER = {
+            "Authorization": f"Bearer {P_BEARER_TOKEN}",
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+
 
         logging.debug("REAUTH_URL : %s", REAUTH_URL)
 
@@ -81,17 +85,18 @@ if EP_CONNECT_CLEARPASS_ID:
 
         except HTTPError as e:
             response["succeeded"] = False
-            response["error"] = "HTTP Error : Could not connect to ClearPass. Response code: {}".format(
-                e.code)
+            response[
+                "error"
+            ] = f"HTTP Error : Could not connect to ClearPass. Response code: {e.code}"
+
 
         except URLError as e:
             response["succeeded"] = False
-            response["error"] = "URL Error : Could not connect to ClearPass. {}".format(
-                e.reason)
+            response["error"] = f"URL Error : Could not connect to ClearPass. {e.reason}"
 
         except Exception as e:
             response["succeeded"] = False
-            response["error"] = "Exception : Could not connect to ClearPass. {}".format(e)
+            response["error"] = f"Exception : Could not connect to ClearPass. {e}"
 
     else:
         response["succeeded"] = False

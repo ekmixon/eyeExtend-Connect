@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 import json
 import urllib.request
 
@@ -46,8 +47,9 @@ url_accept_type = params["connect_cherwell_accept_type"]
 header_info = {
     'Content-Type': url_content_type,
     'Accept': url_accept_type,
-    'Authorization': 'Bearer ' + bearer_token
+    'Authorization': f'Bearer {bearer_token}',
 }
+
 
 response = {}
 # initialize all the variables that we are going to use to store the
@@ -88,7 +90,7 @@ try:
 
         # Build the entire url
         target_url = url_call + url_path + tablename
-        logging.debug("Process table info with table  URL: " + target_url)
+        logging.debug(f"Process table info with table  URL: {target_url}")
         # Issue the REST API call and retrieve the information
         request_response = urllib.request.Request(target_url, headers=header_info, data=bytes(payload_data, encoding="utf-8"), method='GET')
         resp = urllib.request.urlopen(request_response, context=ssl_context)
@@ -99,15 +101,12 @@ try:
 
         # Process the output based on which paramter is being pulled back
         # Extract the ObjID and the Display Name
-        if x == "connect_cherwell_fs_staging_table":
-            import_busObjID = request_response[0]['busObId']
-            import_displayName = request_response[0]['displayName']
-        elif x == "connect_cherwell_configuration_item":
-            configurationitem_busObjID = request_response[0]['busObId']
-            configurationitem_displayName = request_response[0]['displayName']
-        elif x == "connect_cherwell_config_computer":
+        if x == "connect_cherwell_config_computer":
             computer_busObjID = request_response[0]['busObId']
             computer_displayName = request_response[0]['displayName']
+        elif x == "connect_cherwell_config_configsystem":
+            system_busObjID = request_response[0]['busObId']
+            system_displayName = request_response[0]['displayName']
         elif x == "connect_cherwell_config_mobiledevice":
             mobile_busObjID = request_response[0]['busObId']
             mobile_displayName = request_response[0]['displayName']
@@ -129,12 +128,15 @@ try:
         elif x == "connect_cherwell_config_softwarelicense":
             software_busObjID = request_response[0]['busObId']
             software_displayName = request_response[0]['displayName']
-        elif x == "connect_cherwell_config_configsystem":
-            system_busObjID = request_response[0]['busObId']
-            system_displayName = request_response[0]['displayName']
         elif x == "connect_cherwell_config_telephonyequipment":
             telephony_busObjID = request_response[0]['busObId']
             telephony_displayName = request_response[0]['displayName']
+        elif x == "connect_cherwell_configuration_item":
+            configurationitem_busObjID = request_response[0]['busObId']
+            configurationitem_displayName = request_response[0]['displayName']
+        elif x == "connect_cherwell_fs_staging_table":
+            import_busObjID = request_response[0]['busObId']
+            import_displayName = request_response[0]['displayName']
         else:
             misc_busObjID = request_response[0]['busObId']
             misc_displayName = request_response[0]['displayName']
@@ -151,4 +153,4 @@ try:
         response["result_msg"] = "Failed to pull information on the Forescout Tables."
 except Exception as e:
     response["succeeded"] = False
-    response["result_msg"] = "At least one object ID was not retrieved {}".format(str(e))
+    response["result_msg"] = f"At least one object ID was not retrieved {str(e)}"

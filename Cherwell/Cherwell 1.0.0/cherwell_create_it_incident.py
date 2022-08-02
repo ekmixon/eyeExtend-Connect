@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
 
+
 import jwt  # PyJWT version 1.6.1 as of the time of authoring
 import uuid
 import json
@@ -47,8 +48,9 @@ url_accept_type = params["connect_cherwell_accept_type"]
 header_info = {
     'Content-Type': url_content_type,
     'Accept': url_accept_type,
-    'Authorization': 'Bearer ' + bearer_token
+    'Authorization': f'Bearer {bearer_token}',
 }
+
 
 # initialize the payload variable and variables that are used to store
 # the object info for the tables we are going to reference
@@ -78,13 +80,13 @@ try:
     incident_Name = request_response[0]['name']
 except Exception as e:
     response["succeeded"] = False
-    response["troubleshooting"] = "Failed action. Response: {}".format(str(e))
+    response["troubleshooting"] = f"Failed action. Response: {str(e)}"
 
 
 # Server URL update needed to grab the objects schema id
 # this is required to build the payload for the submission
 # of data as the busObj name and ID are required to process
-url_path = "/api/V1/getbusinessobjectschema/busobid/" + incident_busObjID
+url_path = f"/api/V1/getbusinessobjectschema/busobid/{incident_busObjID}"
 
 
 # No payload to send but field is still used to send
@@ -100,9 +102,7 @@ try:
     resp = urllib.request.urlopen(request_response, context=ssl_context)
 
     # Setting up the payload to create the incident
-    incident_payload = {}
-    incident_payload["busObId"] = incident_busObjID
-
+    incident_payload = {"busObId": incident_busObjID}
     # Read the json responses
     request_response1 = json.loads(resp.read())
     incident_obj = request_response1['fieldDefinitions']
@@ -126,14 +126,14 @@ try:
     dirty = True
 except Exception as e:
     response["succeeded"] = False
-    response["troubleshooting"] = "Failed action. Response: {}".format(str(e))
+    response["troubleshooting"] = f"Failed action. Response: {str(e)}"
 
 # Add to the payload to submit the data to the incident table
 for field in field_name_to_field_busobjid_map:
     incident_field={}
     fieldname = str(field)
     try:
-        ct_fieldname = "cherwell_" + fieldname
+        ct_fieldname = f"cherwell_{fieldname}"
         logging.debug(ct_fieldname)
         parameter_field = params[ct_fieldname]
         incident_field["value"] = parameter_field
@@ -142,7 +142,7 @@ for field in field_name_to_field_busobjid_map:
         incident_field["fieldId"] = field_name_to_field_busobjid_map[fieldname]
         incident_fields.append(incident_field)
     except:
-        errormessage = "Error for field: " + ct_fieldname
+        errormessage = f"Error for field: {ct_fieldname}"
         logging.debug(errormessage)
 
 # Put together the final parts of the payload to build a single payload
@@ -150,7 +150,7 @@ incident_payload["fields"] = incident_fields
 incident_payload["persist"] = dirty
 
 # Set up the URL for the REST API to save the object
-target_url = url_call + '/api/V1/savebusinessobject'
+target_url = f'{url_call}/api/V1/savebusinessobject'
 
 # Convert the payload to json in order to convert the values
 # to the correct format for json
@@ -172,14 +172,14 @@ try:
         response["succeeded"] = True
         request_response = json.loads(resp.read())
         id = request_response['busObPublicId']
-        logging.debug("(INCIDENT CREATED) The record id created was {}".format(id))
+        logging.debug(f"(INCIDENT CREATED) The record id created was {id}")
         response["Incident_ID"] = id
     else:
         response["succeeded"] = False
-        response["troubleshooting"] = "Failed action. Response code: {}".format(resp.getcode())
+        response["troubleshooting"] = f"Failed action. Response code: {resp.getcode()}"
 
     logging.debug("Incident Creation result: ")
     logging.debug(response)
 except Exception as e:
     response["succeeded"] = False
-    response["troubleshooting"] = "Failed action. Response: {}".format(str(e))
+    response["troubleshooting"] = f"Failed action. Response: {str(e)}"

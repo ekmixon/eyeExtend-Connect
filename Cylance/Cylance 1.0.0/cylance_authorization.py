@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 import jwt  # PyJWT version 1.6.1 as of the time of authoring
 import uuid
 import json
@@ -54,14 +55,15 @@ payload = {"auth_token": encoded.decode("utf-8")}
 headers = {"Content-Type": "application/json; charset=utf-8"}
 
 # Making an API call to get the JWT token
-request = urllib.request.Request(url + "/auth/v2/token", headers=headers, data=bytes(json.dumps(payload), encoding="utf-8"))
+request = urllib.request.Request(
+    f"{url}/auth/v2/token",
+    headers=headers,
+    data=bytes(json.dumps(payload), encoding="utf-8"),
+)
+
 
 # To use the server validation feature, use the keyword 'ssl_context' in the http reqeust
 resp = urllib.request.urlopen(request, context=ssl_context)
 jwt_token = json.loads(resp.read())['access_token']  # access_token to be passed to GET request
 
-response = {}
-if resp.getcode() == 200:
-    response["token"] = jwt_token
-else:
-    response["token"] = ""
+response = {"token": jwt_token if resp.getcode() == 200 else ""}

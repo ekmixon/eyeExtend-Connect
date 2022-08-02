@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 '''
+
 # v1.0.0 Azure Active Directory Resolve
 # Keith Gilbert
 from urllib import request, parse
@@ -40,11 +41,9 @@ raw = {"client_id": client_id, "client_secret": client_secret,  "scope": graph_u
 data = parse.urlencode(raw).encode()
 req = request.Request(login_url, data=data)
 resp = request.urlopen(req, context=ssl_context)
-logging.debug("response code: " + str(resp.getcode()))
+logging.debug(f"response code: {str(resp.getcode())}")
 json_resp = json.loads(resp.read())
 
-response = {}
-if resp.getcode() == 200:
-    response["token"] = json_resp['access_token']
-else:
-    response["token"] = ""
+response = {
+    "token": json_resp['access_token'] if resp.getcode() == 200 else ""
+}

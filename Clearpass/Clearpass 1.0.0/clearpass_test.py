@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 ''' Test connection to ClearPass
 '''
 
@@ -34,7 +35,7 @@ P_BEARER_TOKEN = params.get("connect_authorization_token")
 P_SERVER_ADDRESS = params.get("connect_clearpass_server_address")
 
 if P_BEARER_TOKEN:
-    logging.debug("P_BEARER_TOKEN (First 10) : %s", P_BEARER_TOKEN[0:10])
+    logging.debug("P_BEARER_TOKEN (First 10) : %s", P_BEARER_TOKEN[:10])
 if P_SERVER_ADDRESS:
     logging.debug("P_SERVER_ADDRESS : %s", P_SERVER_ADDRESS)
 
@@ -45,8 +46,11 @@ if P_BEARER_TOKEN:
     # Build Request
     TEST_URL = f'https://{P_SERVER_ADDRESS}/api/cppm-version'
     # Header
-    BEARER_HEADER = {"Authorization": "Bearer " + P_BEARER_TOKEN,
-                     "Accept": "application/json"}
+    BEARER_HEADER = {
+        "Authorization": f"Bearer {P_BEARER_TOKEN}",
+        "Accept": "application/json",
+    }
+
 
     logging.debug("TEST_URL : %s", TEST_URL)
 
@@ -61,15 +65,18 @@ if P_BEARER_TOKEN:
 
     except HTTPError as e:
         response["succeeded"] = False
-        response["error"] = "HTTP Error : Could not connect to ClearPass. Response code: {}".format(e.code)
+        response[
+            "error"
+        ] = f"HTTP Error : Could not connect to ClearPass. Response code: {e.code}"
+
 
     except URLError as e:
         response["succeeded"] = False
-        response["error"] = "URL Error : Could not connect to ClearPass. {}".format(e.reason)
+        response["error"] = f"URL Error : Could not connect to ClearPass. {e.reason}"
 
     except Exception as e:
         response["succeeded"] = False
-        response["error"] = "Exception : Could not connect to ClearPass. {}".format(str(e))
+        response["error"] = f"Exception : Could not connect to ClearPass. {str(e)}"
 
 else:
     response["succeeded"] = False

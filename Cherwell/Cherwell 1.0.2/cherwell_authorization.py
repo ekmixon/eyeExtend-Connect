@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 import json
 import urllib.request
 
@@ -48,7 +49,8 @@ header_info = {
     'Content-Type': http_response_field_type,
     'Accept': url_accept_type
 }
-payload = 'client_id=' + account_client_id + '&grant_type=' + account_grant_type + '&username=' + account_service_account + '&password=' + account_service_account_pass
+payload = f'client_id={account_client_id}&grant_type={account_grant_type}&username={account_service_account}&password={account_service_account_pass}'
+
 
 payload_data = payload  # urllib.parse.urlencode(payload).encode()
 response = {}
@@ -67,10 +69,7 @@ try:
     # Extract the token
     bearer_token = request_response["access_token"]
 
-    if resp.getcode() == 200:
-        response["token"] = bearer_token
-    else:
-        response["token"] = ""
+    response["token"] = bearer_token if resp.getcode() == 200 else ""
 except Exception as e:
     response["succeeded"] = False
-    response["result_msg"] = "Failed action. Response: {}".format(str(e))
+    response["result_msg"] = f"Failed action. Response: {str(e)}"

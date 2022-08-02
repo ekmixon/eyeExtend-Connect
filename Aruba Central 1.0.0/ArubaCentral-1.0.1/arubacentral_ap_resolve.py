@@ -83,8 +83,7 @@ P_MAC = params.get('mac')
 #   HTTPS Context
 #   Debug
 #######
-HANDLER = []
-HANDLER.append(urllib.request.HTTPCookieProcessor())
+HANDLER = [urllib.request.HTTPCookieProcessor()]
 HANDLER.append(urllib.request.HTTPSHandler(context=ssl_context))
 # Debug level does not seem to work with logging module
 #HANDLER.append(urllib.request.HTTPSHandler(debuglevel=10))

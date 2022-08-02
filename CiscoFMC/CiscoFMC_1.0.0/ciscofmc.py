@@ -55,17 +55,19 @@ class CiscoFMC:
                 logging.debug(f'===>Cisco FMC Class Method - Refresh_auth_token and Token Occurance:{CiscoFMC.token_occurrence}')
 
         except Exception as e:
-            logging.debug(f"===>Cisco FMC Class- Error get_auth_token - Verify the Crendentials")
+            logging.debug(
+                "===>Cisco FMC Class- Error get_auth_token - Verify the Crendentials"
+            )
 
 
 
     def generate_access_token(self):
         api_path = "/api/fmc_platform/v1/auth/generatetoken"
-        url = f'https://{self.fmc_server}' + api_path
+        url = f'https://{self.fmc_server}{api_path}'
 
-        credentials = ('%s:%s' % (self.username, self.passwd))
+        credentials = f'{self.username}:{self.passwd}'
         encoded_credentials = base64.b64encode(credentials.encode('ascii'))
-        authstring = ("Basic %s" % encoded_credentials.decode("ascii"))
+        authstring = f'Basic {encoded_credentials.decode("ascii")}'
         headers = {'Authorization': authstring,'Accept': 'application/json', 'Content-Type': 'application/json'}
 
         try:
@@ -98,7 +100,7 @@ class CiscoFMC:
 
     def generate_refresh_auth_token(self):
         api_path = "/api/fmc_platform/v1/auth/refreshtoken"
-        url = f'https://{self.fmc_server}' + api_path
+        url = f'https://{self.fmc_server}{api_path}'
         headers = {'Accept': 'application/json', 'Content-Type': 'application/json',
                    'X-auth-access-token':CiscoFMC.access_token,'X-auth-refresh-token':CiscoFMC.refresh_token}
 

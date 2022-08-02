@@ -140,8 +140,7 @@ logging.debug('P_PAGE_LIMIT : %s', P_PAGE_LIMIT)
 #   HTTPS Context
 #   Debug
 #######
-HANDLER = []
-HANDLER.append(urllib.request.HTTPCookieProcessor())
+HANDLER = [urllib.request.HTTPCookieProcessor()]
 HANDLER.append(urllib.request.HTTPSHandler(context=ssl_context))
 # Debug level does not seem to work with logging module
 #HANDLER.append(urllib.request.HTTPSHandler(debuglevel=10))
@@ -225,7 +224,6 @@ response = {}
 
 if STEP4_BEARER_TOKEN:
 
-    response = {}
     fs_endpoints = []
 
     #######
@@ -399,9 +397,7 @@ if STEP4_BEARER_TOKEN:
 
     # Connect Response
     logging.debug('endpoints =  %s', fs_endpoints)
-    # Update Forescout with endponts
-    response["endpoints"] = fs_endpoints
-
+    response = {"endpoints": fs_endpoints}
 else:
     logging.info("No Valid Bearer Token")
     response['error'] = 'No Valid Bearer Token'

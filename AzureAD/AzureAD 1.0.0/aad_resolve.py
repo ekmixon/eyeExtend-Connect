@@ -21,6 +21,7 @@ SOFTWARE.
 
 '''
 
+
 # v1.0.0 Azure Active Directory Resolve
 # Keith Gilbert
 from urllib import request, parse
@@ -54,7 +55,7 @@ if "connect_authorization_token" in params and params["connect_authorization_tok
 		user_url_end = "\')"
 		user_search = params["user"]
 		user_url = user_url_start + user_search + user_url_end
-		user_header = {"Authorization": "Bearer " + str(access_token)}
+		user_header = {"Authorization": f"Bearer {str(access_token)}"}
 		req2 = request.Request(user_url, headers=user_header)
 		resp2 = request.urlopen(req2, context=ssl_context)
 		req2_response = json.loads(resp2.read())
@@ -79,7 +80,7 @@ if "connect_authorization_token" in params and params["connect_authorization_tok
 			groups = []
 			if req3_response and req3_response["value"]:
 				count_groups = len(req3_response["value"])
-				for x in range(0, (count_groups)):
+				for x in range(count_groups):
 					return_values_group = req3_response["value"][(x)]
 					for key, value in return_values_group.items():
 						if key in azuread_to_ct_group_props_map:
@@ -87,11 +88,11 @@ if "connect_authorization_token" in params and params["connect_authorization_tok
 							group_properties[azuread_to_ct_group_props_map[key]] = groups
 
 			# Create response dictionary
-			combined_properties =  {**user_properties, **group_properties}
+			combined_properties = user_properties | group_properties
 			response["properties"] = combined_properties
 		else:
 			response["error"] = "No Azure AD ID found"
 	else:
-		response["error"] = "No user to query Azure AD"	
+		response["error"] = "No user to query Azure AD"
 else:
 	response["error"] = "Unauthorized"	

@@ -162,8 +162,8 @@ P_TOKEN = params.get('connect_authorization_token')
 P_PAGE_SIZE = int(params.get('connect_f5vpn_page_size'))
 P_BACKOFF_TIMER = int(params.get('connect_f5vpn_backoff_timer'))
 
+response = {}
 if P_TOKEN is None or P_TOKEN == "":
-    response = {}
     endpoint_data = {}
     logging.debug(
         "Error : No Valid Token Stored. Check f5vpn_authorization.py outputs")
@@ -176,10 +176,6 @@ else:
     F5_SESSION_DATA = get_f5_session_data()
     logging.debug('F5_SESSION_DATA : %s', F5_SESSION_DATA)
 
-    ########################################
-    # Forescout Properties for endpoint(s)
-    ########################################
-    response = {}
     fs_endpoints = []
     logging.info('Clearing response/fs_endpoints')
 
@@ -257,10 +253,7 @@ else:
 
         logging.debug('endpoints : %s', fs_endpoints)
         response = {}
-        response["endpoints"] = fs_endpoints
-
     else:
         logging.info('No Active Sessions')
-        #response["succeeded"] = True
-        #response["result_msg"] = 'No Active Sessions'
-        response["endpoints"] = fs_endpoints
+
+    response["endpoints"] = fs_endpoints

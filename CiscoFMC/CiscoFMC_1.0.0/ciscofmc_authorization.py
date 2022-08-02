@@ -17,6 +17,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 import logging
 
 logging.debug('===>Starting Cisco FMC authorisation Script')
@@ -40,7 +41,7 @@ try:
     else:
         response["token"] = ''
         response['token'] = fmc.access_token
-        response['error'] = f'Could not get the Access Token. Verify the Settings'
+        response['error'] = 'Could not get the Access Token. Verify the Settings'
         logging.debug('===>Cisco FMC Authorisation Failed')
 
 except Exception as e:

@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 # Test script for CounterACT
 import urllib.request,urllib.error
 import base64
@@ -35,21 +36,23 @@ username = params.get('connect_ciscoprime_username')
 password = params.get('connect_ciscoprime_password')
 ctx = ssl_context
 
-# Defining Headers and Adding Authentication header-----
+credentials = f'{username}:{password}'
+encoded_credentials = base64.b64encode(credentials.encode('ascii'))
 headers = {
     'Content-Type': "application/json",
-    'Accept' : "application/json",
+    'Accept': "application/json",
     'charset': 'utf-8',
     'User-Agent': "FSCT/1.16.2020",
-    }
-credentials = ('%s:%s' % (username, password))
-encoded_credentials = base64.b64encode(credentials.encode('ascii'))
-headers['Authorization'] = 'Basic %s' % encoded_credentials.decode("ascii")
+    'Authorization': f'Basic {encoded_credentials.decode("ascii")}',
+}
 
 #-------------------------End of Headers
 
 try:
-    request = urllib.request.Request(base_url + "/webacs/api/v4/data/Devices", headers=headers)
+    request = urllib.request.Request(
+        f"{base_url}/webacs/api/v4/data/Devices", headers=headers
+    )
+
     resp = urllib.request.urlopen(request,context=ctx)
     if resp.getcode() == 200:
         response["succeeded"] = True
@@ -62,6 +65,6 @@ except Exception as e:
     response["succeeded"] = False
     error = str(e)
     response["result_msg"] = "Could not connect to Cisco Prime server"
-    logging.debug("Cannot connect. Error : " + error)
+    logging.debug(f"Cannot connect. Error : {error}")
 
 logging.debug('===>End of Cisco Prime Test Script')

@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 ''' ClearPass Resolve Endpoints
 '''
 
@@ -67,8 +68,11 @@ if EP_MAC:
         # Build Request
         RESOLVE_URL = f'https://{P_SERVER_ADDRESS}/api/session?filter={{"mac_address":"{EP_MAC}","acctstoptime":{{"$exists":false}}}}&calculate_count=true'
         # Header
-        BEARER_HEADER = {"Authorization": "Bearer " + P_BEARER_TOKEN,
-                         "Accept": "application/json"}
+        BEARER_HEADER = {
+            "Authorization": f"Bearer {P_BEARER_TOKEN}",
+            "Accept": "application/json",
+        }
+
         logging.debug("RESOLVE_URL : %s", RESOLVE_URL)
 
         try:
@@ -81,12 +85,12 @@ if EP_MAC:
             properties = {}
             # Check Count
             if count != 0:
+                endpoint = {}
                 for i in range(count):
-                    endpoint = {}
                     prop = resolve_response_json["_embedded"]["items"][i]
                     if prop["state"] == "active":
                         for prop_key, prop_val in list(prop.items()):
-                            if prop_key in CLEARPASS_TO_CT_PROPS_MAP.keys():
+                            if prop_key in CLEARPASS_TO_CT_PROPS_MAP:
                                 prop_ct_name = CLEARPASS_TO_CT_PROPS_MAP[prop_key]
                                 properties[prop_ct_name] = prop_val
                         logging.debug("Resolve completed")
@@ -98,15 +102,18 @@ if EP_MAC:
 
         except HTTPError as e:
             response["succeeded"] = False
-            response["error"] = "HTTP Error : Could not connect to ClearPass. Response code: {}".format(e.code)
+            response[
+                "error"
+            ] = f"HTTP Error : Could not connect to ClearPass. Response code: {e.code}"
+
 
         except URLError as e:
             response["succeeded"] = False
-            response["error"] = "URL Error : Could not connect to ClearPass. {}".format(e.reason)
+            response["error"] = f"URL Error : Could not connect to ClearPass. {e.reason}"
 
         except Exception as e:
             response["succeeded"] = False
-            response["error"] = "Exception : Could not connect to ClearPass. {}".format(str(e))
+            response["error"] = f"Exception : Could not connect to ClearPass. {str(e)}"
 
     else:
         response["succeeded"] = False

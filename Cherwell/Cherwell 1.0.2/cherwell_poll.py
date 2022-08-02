@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 import json
 import urllib.request
 from datetime import datetime, timedelta
@@ -46,8 +47,9 @@ url_accept_type = params["connect_cherwell_accept_type"]
 header_info = {
     'Content-Type': url_content_type,
     'Accept': url_accept_type,
-    'Authorization': 'Bearer ' + bearer_token
+    'Authorization': f'Bearer {bearer_token}',
 }
+
 
 # initialize all the variables that we are going to use to store the
 # table information from Cherwell
@@ -80,12 +82,15 @@ try:
         configurationitem_busObjID = request_response[0]['busObId']
         configurationitem_displayName = request_response[0]['displayName']
 
-    #
-    url_info = {}
     # Server URL
-    url_path = "/api/V1/getbusinessobjectschema/busobid/" + configurationitem_busObjID
-    url_info["ci_busobjid"] = configurationitem_busObjID
-    url_info["ci_displayname"] = configurationitem_displayName
+    url_path = (
+        f"/api/V1/getbusinessobjectschema/busobid/{configurationitem_busObjID}"
+    )
+
+    url_info = {
+        "ci_busobjid": configurationitem_busObjID,
+        "ci_displayname": configurationitem_displayName,
+    }
 
     # No payload to send but field is still used to send
     payload_data = ''
@@ -115,7 +120,7 @@ try:
 
     # -----------------------------------------------------------------------------------------------
 
-    target_url = url_call + '/api/V1/getsearchresults'
+    target_url = f'{url_call}/api/V1/getsearchresults'
     payload_data = '{"busObId":"' + configurationitem_busObjID + '","filters":[{"fieldid":"' + field_macaddress + '","operator":"gt","value":"0"}],"includeAllFields":true}'
 
     request_response = urllib.request.Request(target_url, headers=header_info,
@@ -187,4 +192,4 @@ try:
         endpoints.append(endpoint)
     response["endpoints"] = endpoints
 except Exception as e:
-    response["error"] = "Could not resolve properties {}".format(str(e))
+    response["error"] = f"Could not resolve properties {str(e)}"

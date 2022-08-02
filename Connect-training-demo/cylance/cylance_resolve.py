@@ -47,36 +47,35 @@ payload = {"auth_token": encoded.decode("utf-8")}
 headers = {"Content-Type": "application/json; charset=utf-8"}
 
 # Making an API call to get the JWT token
-request = urllib.request.Request(url + "/auth/v2/token", headers=headers, data=bytes(json.dumps(payload), encoding="utf-8"))
+request = urllib.request.Request(
+    f"{url}/auth/v2/token",
+    headers=headers,
+    data=bytes(json.dumps(payload), encoding="utf-8"),
+)
+
 
 # To use the server validation feature, use the keyword 'ssl_context' in the http reqeust
 resp = urllib.request.urlopen(request, context=ssl_context)
 
 jwt_token = json.loads(resp.read())['access_token']  # access_token to be passed to GET request
-# ***** END - AUTH API CONFIGURATION ***** #
-
-# To obtain the mac address that is needed to make the API query for these host properties, add the 'mac' CounterACT host property
-# as a dependency to each property on 'property.conf'. Any property added as a dependency will be resolved (or attempted to be resolved)
-# by CounterACT and will be in the 'params' dictionary for any property with that dependency. 
-mac_addr = params["mac"]
-if mac_addr:
+if mac_addr := params["mac"]:
     macinput = "-".join(mac_addr[i:i+2] for i in range(0,12,2))
 else:
     macinput = ""
 
 # ***** PART 2 - QUERY MAC ADDRESS  ***** #
-GETMAC_URL = url + "/devices/v2/macaddress/" + macinput
-device_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + str(jwt_token)}
+GETMAC_URL = f"{url}/devices/v2/macaddress/{macinput}"
+device_headers = {
+    "Content-Type": "application/json; charset=utf-8",
+    "Authorization": f"Bearer {str(jwt_token)}",
+}
+
 
 # Get MAC data
 request = urllib.request.Request(GETMAC_URL, headers=device_headers)
 r = urllib.request.urlopen(request, context=ssl_context)
 request_response = json.loads(r.read())
 
-# All responses from scripts must contain the JSON object 'response'. Host property resolve scripts will need to populate a
-# 'properties' JSON object within the JSON object 'response'. The 'properties' object will be a key, value mapping between the
-# CounterACT property name and the value of the property.
-response = {}
 properties = {}
 if request_response:
     return_values = request_response[0]
@@ -84,4 +83,4 @@ if request_response:
         if key in cylance_to_ct_props_map:
             properties[cylance_to_ct_props_map[key]] = value
 
-response["properties"] = properties
+response = {"properties": properties}

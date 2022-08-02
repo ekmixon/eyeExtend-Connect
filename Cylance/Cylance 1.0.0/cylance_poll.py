@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 import jwt  # PyJWT version 1.6.1 as of the time of authoring
 import uuid
 import math
@@ -67,7 +68,12 @@ else:
     headers = {"Content-Type": "application/json; charset=utf-8"}
 
     # Making an API call to get the JWT token
-    request = urllib.request.Request(url + "/auth/v2/token", headers=headers, data=bytes(json.dumps(payload), encoding="utf-8"))
+    request = urllib.request.Request(
+        f"{url}/auth/v2/token",
+        headers=headers,
+        data=bytes(json.dumps(payload), encoding="utf-8"),
+    )
+
 
     # To use the server validation feature, use the keyword 'ssl_context' in the http reqeust
     resp = urllib.request.urlopen(request, context=ssl_context)
@@ -76,8 +82,12 @@ else:
     # ***** END - AUTH API CONFIGURATION ***** #
 
 # ***** PART 2 - QUERY FOR DEVICES  ***** #
-GETMAC_URL = url + "/devices/v2/"
-device_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + str(jwt_token)}
+GETMAC_URL = f"{url}/devices/v2/"
+device_headers = {
+    "Content-Type": "application/json; charset=utf-8",
+    "Authorization": f"Bearer {str(jwt_token)}",
+}
+
 
 # Get MAC data
 request = urllib.request.Request(GETMAC_URL, headers=device_headers)
@@ -88,12 +98,9 @@ request_response = json.loads(r.read())
 # must have a field named either "mac" or "ip". The endpoint object/dictionary may also have a "properties" field, which contains property information in the format
 endpoints=[]
 for endpoint_data in request_response["page_items"]:
-    endpoint = {}
     mac_with_dash = endpoint_data["mac_addresses"][0]
     mac = "".join(mac_with_dash.split("-"))
-    endpoint["mac"] = mac
-    properties = {}
-    properties["connect_cylance_agent_installed"] = True
+    properties = {"connect_cylance_agent_installed": True}
     for key, value in endpoint_data.items():
         if key in cylance_to_ct_props_map and key is not "mac_addresses":
             if key != 'date_offline':
@@ -101,7 +108,6 @@ for endpoint_data in request_response["page_items"]:
             elif value is not None:
                 date_time_obj = datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%f')
                 properties[cylance_to_ct_props_map[key]] = math.floor(date_time_obj.timestamp())
-    endpoint["properties"] = properties
+    endpoint = {"mac": mac, "properties": properties}
     endpoints.append(endpoint)
-response = {}
-response["endpoints"] = endpoints
+response = {"endpoints": endpoints}

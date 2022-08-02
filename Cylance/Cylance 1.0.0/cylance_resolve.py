@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 import jwt  # PyJWT version 1.6.1 as of the time of authoring
 import uuid
 import math
@@ -74,7 +75,12 @@ else:
     headers = {"Content-Type": "application/json; charset=utf-8"}
 
     # Making an API call to get the JWT token
-    request = urllib.request.Request(url + "/auth/v2/token", headers=headers, data=bytes(json.dumps(payload), encoding="utf-8"))
+    request = urllib.request.Request(
+        f"{url}/auth/v2/token",
+        headers=headers,
+        data=bytes(json.dumps(payload), encoding="utf-8"),
+    )
+
 
     # To use the server validation feature, use the keyword 'ssl_context' in the http reqeust
     resp = urllib.request.urlopen(request, context=ssl_context)
@@ -85,18 +91,18 @@ else:
 # found in the params dictionary if CounterACT was able to resolve the properties. If not, they will not be found in the params dictionary.
 if "mac" in params:
     mac = '-'.join(params["mac"][i:i+2] for i in range(0,12,2))
-    GETMAC_URL = url + "/devices/v2/macaddress/" + mac
-    device_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + str(jwt_token)}
+    GETMAC_URL = f"{url}/devices/v2/macaddress/{mac}"
+    device_headers = {
+        "Content-Type": "application/json; charset=utf-8",
+        "Authorization": f"Bearer {str(jwt_token)}",
+    }
+
 
     # Get MAC data
     request = urllib.request.Request(GETMAC_URL, headers=device_headers)
     r = urllib.request.urlopen(request, context=ssl_context)
     request_response = json.loads(r.read())
 
-    # All responses from scripts must contain the JSON object 'response'. Host property resolve scripts will need to populate a
-    # 'properties' JSON object within the JSON object 'response'. The 'properties' object will be a key, value mapping between the
-    # CounterACT property name and the value of the property.
-    response = {}
     properties = {}
     if request_response:
         properties["connect_cylance_agent_installed"] = True
@@ -110,7 +116,6 @@ if "mac" in params:
                     properties[cylance_to_ct_props_map[key]] = math.floor(date_time_obj.timestamp())
     else:
         properties["connect_cylance_agent_installed"] = False
-    response["properties"] = properties
+    response = {"properties": properties}
 else:
-    response = {}
-    response["error"] = "No mac address to query the endpoint for."
+    response = {"error": "No mac address to query the endpoint for."}

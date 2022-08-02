@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 '''
 Retrieve the Bearer token from ClearPass
 '''
@@ -35,7 +36,7 @@ P_CLIENT_ID = params.get("connect_clearpass_client_id")
 P_SECRET = params.get("connect_clearpass_secret")
 
 if P_CLIENT_ID:
-    logging.debug("Client ID (First 5): %s", P_CLIENT_ID[0:5])
+    logging.debug("Client ID (First 5): %s", P_CLIENT_ID[:5])
 
 # Build AUTH payload
 AUTH_PAYLOAD = {"grant_type": "client_credentials",
@@ -48,9 +49,7 @@ AUTH_PAYLOAD_ENCODE = parse.urlencode(AUTH_PAYLOAD).encode()
 # AUTH URL
 AUTH_URL = f"https://{P_SERVER_ADDRESS}/api/oauth"
 
-response = {}
-response["token"] = ""
-
+response = {"token": ""}
 # Request Token
 try:
     # POST AUTH
@@ -59,11 +58,9 @@ try:
         AUTH_URL, data=AUTH_PAYLOAD_ENCODE, method="POST")
     auth_resp = request.urlopen(auth_req, context=ssl_context)
     auth_json_resp = json.loads(auth_resp.read())
-    auth_access_token = auth_json_resp.get('access_token')
-
-    if auth_access_token:
+    if auth_access_token := auth_json_resp.get('access_token'):
         logging.info('Retrieved Bearer Token')
-        logging.debug("Bearer Token (First 10): %s", auth_access_token[0:10])
+        logging.debug("Bearer Token (First 10): %s", auth_access_token[:10])
         response["succeeded"] = True
         response["token"] = auth_access_token
     else:
@@ -73,21 +70,21 @@ try:
 
 except HTTPError as e:
     response["succeeded"] = False
-    response["error"] = "Could not connect to ClearPass service. Response code: {}".format(
-        e.code)
+    response[
+        "error"
+    ] = f"Could not connect to ClearPass service. Response code: {e.code}"
+
     logging.debug(
         'HTTP Error not connect to ClearPass service : %s', format(e.code))
 
 except URLError as e:
     response["succeeded"] = False
-    response["error"] = "Could not connect to ClearPass service. {}".format(
-        e.reason)
+    response["error"] = f"Could not connect to ClearPass service. {e.reason}"
     logging.debug(
         'URL Error not connect to ClearPass service : %s', format(e.reason))
 
 except Exception as e:
     response["succeeded"] = False
-    response["error"] = "Could not connect to ClearPass service. {}".format(
-        str(e))
+    response["error"] = f"Could not connect to ClearPass service. {str(e)}"
     logging.debug(
         'Exception Error not connect to ClearPass service : %s', format(str(e)))

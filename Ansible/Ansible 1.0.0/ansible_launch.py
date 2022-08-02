@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 import json
 import urllib.parse
 from base64 import b64encode
@@ -36,10 +37,12 @@ ansible_username = params['connect_ansible_username']
 ansible_password = params['connect_ansible_password']
 ansible_template_id = params['connect_ansible_template_id']
 ansible_extra_vars = params['connect_ansible_extra_vars']
-auth_token = b64encode(bytes(ansible_username + ':' + ansible_password, "utf-8")).decode("ascii")
-launch_url = base_url + '/api/v2/job_templates/' + ansible_template_id + '/launch/'
+auth_token = b64encode(
+    bytes(f'{ansible_username}:{ansible_password}', "utf-8")
+).decode("ascii")
+
+launch_url = f'{base_url}/api/v2/job_templates/{ansible_template_id}/launch/'
 extravars = {}
-payload = {}
 response = {}
 
 # User needs to send keyword = value, 1 per line from CT interface
@@ -48,32 +51,31 @@ for line in extravarlines:
     linesplit = line.split('=')
     keyword = linesplit[0].lstrip().rstrip()
     value = linesplit[1].lstrip().rstrip()
-    extravars.update({keyword: value})
+    extravars[keyword] = value
 
-payload['extra_vars'] = extravars
-
+payload = {'extra_vars': extravars}
 # Tower uses basic auth
 headers = {
     'Content-Type': "application/json",
     'charset': 'utf-8',
     'User-Agent': "FSCT/7.20.2020",
-    'Authorization': 'Basic %s' % auth_token
-    }
+    'Authorization': f'Basic {auth_token}',
+}
+
 
 # ----  ACTION ----
 try:
     request = urllib.request.Request(launch_url, headers=headers, data=bytes(json.dumps(payload), encoding="utf-8"))
     resp = urllib.request.urlopen(request, context=ssl_context)
     request_response = json.loads(resp.read())
-    logging.info("=======>>>>>Ansible: Tower Response: {}".format(request_response))
-    if resp.getcode() == 201:
-        response['succeeded'] = True
-    else:
-        response['succeeded'] = False
-
+    logging.info(f"=======>>>>>Ansible: Tower Response: {request_response}")
+    response['succeeded'] = resp.getcode() == 201
 except Exception as err:
     response['succeeded'] = False
-    logging.info("=======>>>>>Error sending data to Ansible Tower, server returned ===> " + str(err))
+    logging.info(
+        f"=======>>>>>Error sending data to Ansible Tower, server returned ===> {str(err)}"
+    )
+
     response['troubleshooting'] = str(err)
 
 logging.info("=======>>>>>Ending Ansible Launch Script.")

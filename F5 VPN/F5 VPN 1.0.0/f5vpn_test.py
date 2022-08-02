@@ -19,6 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
+
 '''
 Test Connect To F5
 '''
@@ -40,11 +41,9 @@ P_TOKEN = params.get('connect_authorization_token')
 ### FUNCTION END ###
 
 if P_TOKEN is None or P_TOKEN == "":
-    response = {}
     endpoint_data = {}
     logging.debug('Error : No Valid Token Stored. Check f5vpn_authorization.py outputs')
-    response["succeeded"] = False
-    response["result_msg"] = "No valid token stored."
+    response = {"succeeded": False, "result_msg": "No valid token stored."}
 else:
     try:
         response = {}

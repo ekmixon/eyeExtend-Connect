@@ -3,48 +3,52 @@ import sys
 
 def check_property_script_mapping(data):
 	list_of_properties = data["properties"]
-	set_of_property_tags = set()
-	for property in list_of_properties:
-		set_of_property_tags.add(property["tag"])
+	set_of_property_tags = {property["tag"] for property in list_of_properties}
 	list_of_script_configs = data["scripts"]
 	for script_conf in list_of_script_configs:
 		if "properties" in script_conf:
 			for property in script_conf["properties"]:
 				if property not in set_of_property_tags:
-					print("Warning! Property {} matching to script name {} does not exist".format(property, script_conf["name"]))
+					print(
+						f'Warning! Property {property} matching to script name {script_conf["name"]} does not exist'
+					)
+
 				else:
 					set_of_property_tags.remove(property)
 	for property in set_of_property_tags:
-		print("Warning! Property {} has no matching to a script and will not be resolvable.".format(property))
+		print(
+			f"Warning! Property {property} has no matching to a script and will not be resolvable."
+		)
 
 def check_name(data):
 	if "name" not in data:
 		print("App must have a name defined.")
+	elif "_" in data["name"]:
+		print("Name of the app cannot contain an underscore.")
 	else:
-		if "_" in data["name"]:
-			print("Name of the app cannot contain an underscore.")
-		else:
-			return data["name"].lower()
+		return data["name"].lower()
 	return ""
 
 def verify_name(name, prefix):
 	if not name.startswith(prefix):
-		print("Name {} must start with {}".format(name, prefix))
+		print(f"Name {name} must start with {prefix}")
 
 def check_existence(data, name_of_field, prefix, check_name, scripts=False):
 	if name_of_field not in data:
-		print("{} must have field: {}".format(data, name_of_field))
+		print(f"{data} must have field: {name_of_field}")
 	else:
-		if (name_of_field == "tag" or name_of_field == "field ID") and check_name:
+		if name_of_field in ["tag", "field ID"] and check_name:
 			verify_name(data[name_of_field], prefix)
 		if name_of_field == "name" and check_name:
 			verify_name(data["name"], prefix)
-			if scripts:
-				if not data["name"].endswith(".py"):
-					print("{} must end with .py to be a python script".format(data["name"]))
-		if name_of_field == "type":
-			if data["type"] not in valid_types and data["type"] not in valid_system_field_types:
-				print("{} is not a valid type".format(data["type"]))
+			if scripts and not data["name"].endswith(".py"):
+				print(f'{data["name"]} must end with .py to be a python script')
+		if (
+			name_of_field == "type"
+			and data["type"] not in valid_types
+			and data["type"] not in valid_system_field_types
+		):
+			print(f'{data["type"]} is not a valid type')
 
 
 required_property_fields = ["tag", "label", "description", "group", "type"]
@@ -61,11 +65,11 @@ with open(property_file_name) as json_file:
 	try:
 		data = json.load(json_file)
 	except ValueError as e:
-		print("Misformed property.conf json file: {}".format(str(e)))
+		print(f"Misformed property.conf json file: {str(e)}")
 		quit()
 	check_property_script_mapping(data)
 	name = check_name(data)
-	app_full_name = "connect_" + name
+	app_full_name = f"connect_{name}"
 	for group in data["groups"]:
 		verify_name(group["name"], app_full_name)
 		if "label" not in group:
@@ -111,11 +115,11 @@ with open(system_file_name) as system_json_file:
 	try:
 		data = json.load(system_json_file)
 	except JSONDecodeError as e:
-		print("Misformed system.conf json file: {}".format(str(e)))
+		print(f"Misformed system.conf json file: {str(e)}")
 		quit()
 	system_name = check_name(data)
 	if system_name != name:
-		print("System.conf name {} must match property.conf name {}".format(system_name, name))
+		print(f"System.conf name {system_name} must match property.conf name {name}")
 	if "version" not in data:
 		print("System.conf must contain version number.")
 	if "author" not in data:
@@ -134,9 +138,9 @@ with open(system_file_name) as system_json_file:
 					print("Proxy server panel must have a title")
 				continue
 			if "title" not in panel:
-				print("Panel {} must have a title.".format(str(panel)))
+				print(f"Panel {str(panel)} must have a title.")
 			if "fields" not in panel:
-				print("Panel {} must have fields.".format(str(panel)))
+				print(f"Panel {str(panel)} must have fields.")
 			else:
 				for field in panel["fields"]:
 					if "rate limiter" in field:
@@ -145,6 +149,5 @@ with open(system_file_name) as system_json_file:
 						continue
 					if "certification validation" in field or "host discovery" in field:
 						continue
-					else:
-						for required_field in required_panel_fields:
-							check_existence(field, required_field, app_full_name, True)
+					for required_field in required_panel_fields:
+						check_existence(field, required_field, app_full_name, True)

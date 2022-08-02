@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 import urllib.request
 import logging
 
@@ -30,7 +31,7 @@ logging.info('===>Starting Ansible Tower Test Script')
 
 # Test for V2 API, this does not require authentication
 base_url = params['connect_ansible_tower']
-test_url = base_url + '/api/v2'
+test_url = f'{base_url}/api/v2'
 
 headers = {
     'Content-Type': "application/json",
@@ -52,7 +53,10 @@ try:
 
 except Exception as err:
     response['succeeded'] = False
-    logging.info("=======>>>>>Error sending data to Ansible Tower, server returned ===> " + str(err))
+    logging.info(
+        f"=======>>>>>Error sending data to Ansible Tower, server returned ===> {str(err)}"
+    )
+
     response['troubleshooting'] = str(err)
 
 logging.info('===>Ending Ansible Tower Test Script')

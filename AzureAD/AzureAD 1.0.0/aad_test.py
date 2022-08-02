@@ -19,35 +19,42 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
+
 # v1.0.0 Azure Active Directory Test
 # Keith Gilbert
 from urllib import request, parse
 
-logging.info("****************************** params: {}".format(params))
+logging.info(f"****************************** params: {params}")
 
 # Values for system.conf passed to params
 response = {}
 if ("connect_authorization_token" in params) and params["connect_authorization_token"] != "":
 	access_token = params["connect_authorization_token"]
+	response["succeeded"] = True
 	if "connect_azuread_test_user" in params and params["connect_azuread_test_user"] != "":
 		test_user = params["connect_azuread_test_user"]
 		user_url_start = "https://graph.microsoft.com/v1.0/users?$filter=startswith(userPrincipalName%2C+\'"
 		user_url_end = "\')"
 		user_url = user_url_start + test_user + user_url_end
-		user_header = {"Authorization": "Bearer " + str(access_token)}
+		user_header = {"Authorization": f"Bearer {str(access_token)}"}
 		req2 = request.Request(user_url, headers=user_header)
 		resp2 = request.urlopen(req2, context=ssl_context)
 		req2_response = json.loads(resp2.read())
-		logging.info("******************************req2_response = {}".format(str(req2_response)))
+		logging.info(
+			f"******************************req2_response = {str(req2_response)}"
+		)
+
 		if resp2.getcode() == 200 and req2_response["value"]:
 			logging.info("****************************** resp2.getcode() == 200")
-			response["succeeded"] = True
-			response["result_msg"] = "Successful connection : Test User = " + test_user + " >> " + str(req2_response["value"])
+			response[
+				"result_msg"
+			] = f"Successful connection : Test User = {test_user} >> " + str(
+				req2_response["value"]
+			)
+
 		else:
-			response["succeeded"] = True
 			response["result_msg"] = "Successful connection : Test User doesn't exist"
 	else:
-		response["succeeded"] = True
 		response["result_msg"] = "Successful connection : Test User not defined"
 else:
 	response["succeeded"] = False

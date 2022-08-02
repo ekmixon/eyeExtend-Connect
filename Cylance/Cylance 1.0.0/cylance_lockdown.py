@@ -20,6 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 import jwt  # PyJWT version 1.6.1 as of the time of authoring
 import uuid
 import ssl_wrapper
@@ -51,22 +52,31 @@ else:
         "tid": tenant,
         "jti": jti_val,
     }
-    
+
     encoded = jwt.encode(claims, secret, algorithm='HS256')
     payload = {"auth_token": encoded.decode("utf-8")}
     headers = {"Content-Type": "application/json; charset=utf-8"}
-    
+
     # Making an API call to get the JWT token
-    request = urllib.request.Request(url + "/auth/v2/token",  headers=headers, data=bytes(json.dumps(payload), encoding="utf-8"))
-    
+    request = urllib.request.Request(
+        f"{url}/auth/v2/token",
+        headers=headers,
+        data=bytes(json.dumps(payload), encoding="utf-8"),
+    )
+
+
     # To use the server validation feature, use the keyword 'ssl_context' in the http reqeust
     resp = urllib.request.urlopen(request, context=ssl_context)
-    
+
     jwt_token = json.loads(resp.read())['access_token']  # access_token to be passed to GET request
 
 new_mac = '-'.join(format(s, '02x') for s in bytes.fromhex(params['mac']))
-GETDEVICEID_URL = url + "/devices/v2/macaddress/" + new_mac
-device_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + str(jwt_token)}
+GETDEVICEID_URL = f"{url}/devices/v2/macaddress/{new_mac}"
+device_headers = {
+    "Content-Type": "application/json; charset=utf-8",
+    "Authorization": f"Bearer {str(jwt_token)}",
+}
+
 
 # Get Device ID from MAC address
 request = urllib.request.Request(GETDEVICEID_URL, headers=device_headers)
@@ -77,9 +87,16 @@ request_response = json.loads(r.read())
 device_id = request_response[0]['id'].upper().replace('-', '')
 
 # Now, it is the time to do lockdown by using the device ID
-URL = url + "/devicecommands/v2/" + device_id + "/lockdown?value=true&expires=0:00:05"  # TODO: take the lockdown period from params[]
+URL = (
+    f"{url}/devicecommands/v2/{device_id}/lockdown?value=true&expires=0:00:05"
+)
 
-device_headers = {"Content-Type": "application/json; charset=utf-8", "Authorization": "Bearer " + str(jwt_token)}
+
+device_headers = {
+    "Content-Type": "application/json; charset=utf-8",
+    "Authorization": f"Bearer {str(jwt_token)}",
+}
+
 
 request = urllib.request.Request(URL, headers=device_headers, method='PUT',)
 r = urllib.request.urlopen(request, context=ssl_wrapper.create_nonvalidating_ssl_context())
@@ -89,8 +106,8 @@ if r.getcode() == 201:
     response["succeeded"] = True
     request_response = json.loads(r.read())
     data = request_response['data']
-    logging.debug("The result data is {}".format(data))
+    logging.debug(f"The result data is {data}")
     response["data"] = data
 else:
     response["succeeded"] = False
-    response["troubleshooting"] = "Failed action. Response code: {}".format(r.getcode())
+    response["troubleshooting"] = f"Failed action. Response code: {r.getcode()}"
